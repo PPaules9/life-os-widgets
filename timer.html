@@ -1,0 +1,80 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Focus Timer</title></head><body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300&family=Manrope:wght@400;500;700&display=swap">
+<style>
+/* Layout: a ring with the countdown inside, mode pills above, start/reset below; session count persists per browser. Dark look to match the Life OS page. */
+:root{
+  --bg:#141020; --fg:#efeafb; --muted:#9b90bd; --accent:#b388ff; --line:#2b2347; --panel:#1b1530;
+  --display:"Fraunces",Georgia,serif; --body:"Manrope",system-ui,sans-serif; color-scheme:dark;
+}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box}
+.wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.modes{display:flex;gap:6px}
+.modes button{background:var(--panel);border:1px solid var(--line);color:var(--muted);font:inherit;font-size:12px;font-weight:500;padding:6px 12px;border-radius:999px;cursor:pointer}
+.modes button.on{color:var(--fg);border-color:var(--accent)}
+.modes button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ring{position:relative;width:170px;height:170px;max-width:100%}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:6}
+.track{stroke:var(--line)}
+.prog{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.readout{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.t{font-family:var(--display);font-weight:300;font-size:46px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.ctl{display:flex;gap:8px}
+.ctl button{font:inherit;font-weight:700;font-size:13px;padding:9px 22px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:#1a1230;cursor:pointer}
+.ctl button.ghost{background:transparent;color:var(--muted);border-color:var(--line)}
+.ctl button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.count{font-size:12px;color:var(--muted)}
+.count b{color:var(--fg)}
+@media (prefers-reduced-motion:reduce){.prog{transition:none}}
+</style>
+<div class="wrap">
+  <div class="modes">
+    <button type="button" data-m="25" class="on" id="m25">Focus 25</button>
+    <button type="button" data-m="5" id="m5">Break 5</button>
+    <button type="button" data-m="15" id="m15">Long 15</button>
+  </div>
+  <div class="ring">
+    <svg viewBox="0 0 100 100"><circle class="track" cx="50" cy="50" r="46"/><circle class="prog" id="prog" cx="50" cy="50" r="46"/></svg>
+    <div class="readout"><div class="t" id="t">25:00</div><div class="lbl" id="lbl">ready</div></div>
+  </div>
+  <div class="ctl"><button type="button" id="start">Start</button><button type="button" class="ghost" id="reset">Reset</button></div>
+  <div class="count">Focus sessions today: <b id="n">0</b></div>
+</div>
+<script>
+const C=2*Math.PI*46; const prog=document.getElementById("prog"); prog.style.strokeDasharray=C;
+let mode=25, total=mode*60, left=total, running=false, endAt=0, iv=null;
+const today=new Date().toISOString().slice(0,10);
+let sessions=0; try{const s=JSON.parse(localStorage.getItem("focus")||"{}"); if(s.d===today)sessions=s.n||0;}catch{}
+const $=id=>document.getElementById(id);
+function draw(){
+  const m=Math.floor(left/60), s=left%60;
+  $("t").textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+  prog.style.strokeDashoffset=C*(1-left/total);
+  $("n").textContent=sessions;
+  $("lbl").textContent=running?(mode===25?"focusing":"resting"):(left===total?"ready":"paused");
+  $("start").textContent=running?"Pause":"Start";
+}
+function tick(){
+  left=Math.max(0,Math.round((endAt-Date.now())/1000)); draw();
+  if(left===0){clearInterval(iv);running=false;
+    if(mode===25){sessions++;try{localStorage.setItem("focus",JSON.stringify({d:today,n:sessions}));}catch{}}
+    $("lbl").textContent="done · "+(mode===25?"take a break":"back to it"); $("start").textContent="Start";
+    try{const ac=new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=660;g.gain.value=.08;o.start();o.stop(ac.currentTime+.35);}catch{}
+  }
+}
+$("start").addEventListener("click",()=>{
+  if(running){clearInterval(iv);running=false;draw();return;}
+  if(left===0)left=total;
+  endAt=Date.now()+left*1000; running=true; iv=setInterval(tick,250); draw();
+});
+$("reset").addEventListener("click",()=>{clearInterval(iv);running=false;left=total;draw();});
+document.querySelectorAll(".modes button").forEach(b=>b.addEventListener("click",()=>{
+  clearInterval(iv);running=false;mode=+b.dataset.m;total=mode*60;left=total;
+  document.querySelectorAll(".modes button").forEach(x=>x.classList.toggle("on",x===b));draw();
+}));
+draw();
+</script>
+
+</body></html>

@@ -1,0 +1,90 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Life OS Daily Bar</title></head><body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300;1,9..144,400&family=Manrope:wght@400;500;700&display=swap">
+<style>
+/* Layout: one dark band, clock on the left, verse of the day filling the rest; stacks on phones. Single deliberate dark look to sit inside the dark Notion page. */
+:root{
+  --bg:#141020; --panel:#1b1530; --fg:#efeafb; --muted:#9b90bd; --accent:#b388ff; --accent-dim:#5e4a9c; --line:#2b2347;
+  --display:"Fraunces",Georgia,serif; --body:"Manrope",system-ui,sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box}
+.bar{display:flex;gap:28px;align-items:stretch;min-height:120px}
+.clock{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;padding-right:28px;border-right:1px solid var(--line);min-width:150px}
+.time{font-family:var(--display);font-weight:300;font-size:52px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.time small{font-size:18px;color:var(--accent);margin-left:4px;font-family:var(--body);font-weight:500}
+.date{color:var(--muted);font-size:13px;margin-top:8px;letter-spacing:.04em;text-transform:uppercase}
+.verse{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.text{font-family:var(--display);font-style:italic;font-weight:300;font-size:22px;line-height:1.35;text-wrap:balance;max-width:60ch}
+.ref{color:var(--muted);font-size:13px;font-weight:500}
+@media (max-width:560px){.bar{flex-direction:column;gap:18px}.clock{border-right:0;border-bottom:1px solid var(--line);padding-right:0;padding-bottom:14px}.time{font-size:44px}.text{font-size:19px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<div class="bar">
+  <div class="clock">
+    <div class="time" id="time" aria-live="off">--:--<small id="ampm"></small></div>
+    <div class="date" id="date"></div>
+  </div>
+  <div class="verse">
+    <div class="eyebrow">Verse of the day</div>
+    <div class="text" id="vtext"></div>
+    <div class="ref" id="vref"></div>
+  </div>
+</div>
+<script>
+const TZ="Africa/Cairo";
+const verses=[
+["Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.","Proverbs 3:5-6"],
+["The Lord was with Joseph, and he was a successful man.","Genesis 39:2"],
+["Be holy, because I am holy.","1 Peter 1:16"],
+["I can do all things through Christ who strengthens me.","Philippians 4:13"],
+["Commit your work to the Lord, and your plans will be established.","Proverbs 16:3"],
+["But seek first the kingdom of God and his righteousness, and all these things will be added to you.","Matthew 6:33"],
+["Whatever you do, work at it with all your heart, as working for the Lord.","Colossians 3:23"],
+["Abraham believed the Lord, and he credited it to him as righteousness.","Genesis 15:6"],
+["He was called a friend of God.","James 2:23"],
+["For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future.","Jeremiah 29:11"],
+["Do you not know that your bodies are temples of the Holy Spirit? Therefore honor God with your bodies.","1 Corinthians 6:19-20"],
+["Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.","Joshua 1:9"],
+["Husbands, love your wives, just as Christ loved the church and gave himself up for her.","Ephesians 5:25"],
+["Therefore what God has joined together, let no one separate.","Mark 10:9"],
+["The plans of the diligent lead surely to abundance.","Proverbs 21:5"],
+["Let your light shine before others, that they may see your good deeds and glorify your Father in heaven.","Matthew 5:16"],
+["Whoever can be trusted with very little can also be trusted with much.","Luke 16:10"],
+["In the morning, Lord, you hear my voice; in the morning I lay my requests before you and wait expectantly.","Psalm 5:3"],
+["Be still, and know that I am God.","Psalm 46:10"],
+["Do not conform to the pattern of this world, but be transformed by the renewing of your mind.","Romans 12:2"],
+["A gentle answer turns away wrath, but a harsh word stirs up anger.","Proverbs 15:1"],
+["Whoever is slow to anger is better than the mighty, and he who rules his spirit than he who takes a city.","Proverbs 16:32"],
+["The fear of the Lord is the beginning of wisdom.","Proverbs 9:10"],
+["Let us not become weary in doing good, for at the proper time we will reap a harvest if we do not give up.","Galatians 6:9"],
+["Draw near to God, and he will draw near to you.","James 4:8"],
+["Serve one another humbly in love.","Galatians 5:13"],
+["Your word is a lamp for my feet, a light on my path.","Psalm 119:105"],
+["Give thanks in all circumstances; for this is the will of God in Christ Jesus for you.","1 Thessalonians 5:18"],
+["Teach us to number our days, that we may gain a heart of wisdom.","Psalm 90:12"],
+["He who began a good work in you will carry it on to completion until the day of Christ Jesus.","Philippians 1:6"],
+["Cast all your anxiety on him because he cares for you.","1 Peter 5:7"]
+];
+function dayIndex(){
+  const p=new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  const [y,m,d]=p.split("-").map(Number);
+  const n=Math.floor(Date.UTC(y,m-1,d)/86400000);
+  return ((n%verses.length)+verses.length)%verses.length;
+}
+function tick(){
+  const now=new Date();
+  const t=new Intl.DateTimeFormat("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit",hour12:true}).formatToParts(now);
+  const h=t.find(x=>x.type==="hour").value, m=t.find(x=>x.type==="minute").value, ap=t.find(x=>x.type==="dayPeriod").value;
+  document.getElementById("time").firstChild.nodeValue=h+":"+m;
+  document.getElementById("ampm").textContent=ap;
+  document.getElementById("date").textContent=new Intl.DateTimeFormat("en-GB",{timeZone:TZ,weekday:"long",day:"numeric",month:"long"}).format(now)+" · Cairo";
+}
+const v=verses[dayIndex()];
+document.getElementById("vtext").textContent="“"+v[0]+"”";
+document.getElementById("vref").textContent=v[1];
+tick(); setInterval(tick,1000);
+</script>
+
+</body></html>
