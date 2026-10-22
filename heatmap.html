@@ -12,6 +12,8 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);paddi
 .wrap{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap}
 .grid-wrap{flex:1 1 420px;min-width:0;overflow-x:auto}
 .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:12px}
+.name{font-size:20px;font-weight:700;letter-spacing:-.01em;color:var(--fg);margin:0 0 4px}
+.name:empty{display:none}
 .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
 .status{font-size:12px;color:var(--muted)}
 .status.err{color:#f0a0a0}
@@ -31,6 +33,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);paddi
 </style>
 <div class="wrap">
   <div class="grid-wrap">
+    <h1 class="name" id="name"></h1>
     <div class="head"><span class="eyebrow" id="title">Habit votes · last 16 weeks</span><span class="status" id="status">sample data</span></div>
     <div class="months" id="months"></div>
     <div class="grid" id="grid"><div class="days"><span>Sun</span><span></span><span>Tue</span><span></span><span>Thu</span><span></span><span>Sat</span></div></div>
@@ -95,7 +98,7 @@ render();
     const r=await fetch("./data.json",{cache:"no-store"}); if(!r.ok)throw 0;
     const j=await r.json();
     if(HABIT){const h=(j.habits||{})[HABIT]; if(!h)throw 0; counts=h.days||{}; habitName=h.name;
-      document.getElementById("title").textContent=habitName+" · last 16 weeks"; document.title=habitName+" Heatmap";}
+      document.getElementById("name").textContent=habitName; document.getElementById("title").textContent="Last 16 weeks"; document.title=habitName+" Heatmap";}
     else counts=j.counts||{};
     render();
     status.textContent="updated "+(j.updated||"");
