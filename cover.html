@@ -1,0 +1,43 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Starfield Cover</title>
+<style>
+/* A slow drifting starfield with occasional shooting stars and a faint purple nebula, drawn on canvas. Edge to edge, no card, meant to sit at the top of the page as an animated cover. */
+:root{color-scheme:dark}
+html,body{margin:0;height:100%;background:#0d0a18;overflow:hidden}
+canvas{display:block;width:100%;height:100%}
+@media (prefers-reduced-motion:reduce){canvas{animation:none}}
+</style></head><body>
+<canvas id="c" aria-hidden="true"></canvas>
+<script>
+const c=document.getElementById("c"),x=c.getContext("2d");
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let W,H,stars=[],shoot=[],dpr=Math.min(2,devicePixelRatio||1);
+function size(){W=c.clientWidth;H=c.clientHeight;c.width=W*dpr;c.height=H*dpr;x.setTransform(dpr,0,0,dpr,0,0);
+  const n=Math.round(W*H/3200); stars=[];
+  for(let i=0;i<n;i++)stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.3+.2,p:Math.random()*Math.PI*2,s:.3+Math.random()*.9,v:.02+Math.random()*.05});
+}
+function neb(){
+  const g1=x.createRadialGradient(W*.75,H*.35,0,W*.75,H*.35,Math.max(W,H)*.55);
+  g1.addColorStop(0,"rgba(120,80,220,.22)");g1.addColorStop(1,"rgba(120,80,220,0)");
+  const g2=x.createRadialGradient(W*.2,H*.8,0,W*.2,H*.8,Math.max(W,H)*.45);
+  g2.addColorStop(0,"rgba(60,110,200,.16)");g2.addColorStop(1,"rgba(60,110,200,0)");
+  x.fillStyle=g1;x.fillRect(0,0,W,H);x.fillStyle=g2;x.fillRect(0,0,W,H);
+}
+let t=0;
+function frame(){
+  x.fillStyle="#0d0a18";x.fillRect(0,0,W,H);neb();
+  for(const s of stars){
+    if(!reduce){s.x-=s.v*s.s;if(s.x<-2){s.x=W+2;s.y=Math.random()*H;}s.p+=.02*s.s;}
+    const a=.45+.45*Math.sin(s.p);
+    x.fillStyle="rgba(235,228,255,"+a.toFixed(2)+")";x.beginPath();x.arc(s.x,s.y,s.r,0,Math.PI*2);x.fill();
+  }
+  if(!reduce){
+    if(Math.random()<.006&&shoot.length<2)shoot.push({x:Math.random()*W*.8,y:Math.random()*H*.5,l:0,vx:7+Math.random()*4,vy:2+Math.random()*2});
+    shoot=shoot.filter(s=>s.l<40);
+    for(const s of shoot){s.x+=s.vx;s.y+=s.vy;s.l++;const g=x.createLinearGradient(s.x,s.y,s.x-s.vx*8,s.y-s.vy*8);g.addColorStop(0,"rgba(200,180,255,.9)");g.addColorStop(1,"rgba(200,180,255,0)");x.strokeStyle=g;x.lineWidth=1.4;x.beginPath();x.moveTo(s.x,s.y);x.lineTo(s.x-s.vx*8,s.y-s.vy*8);x.stroke();}
+    requestAnimationFrame(frame);
+  }
+  t++;
+}
+size();addEventListener("resize",size);frame();
+</script>
+</body></html>

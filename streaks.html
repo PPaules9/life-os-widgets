@@ -1,0 +1,56 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Streak Board</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap">
+<style>
+/* Layout: one row per active habit — name, 30-day strip of cells, current streak, best streak. Rows sorted by current streak. Dark card on a transparent page. */
+:root{--bg:#141020;--fg:#efeafb;--muted:#9b90bd;--accent:#b388ff;--line:#2b2347;--off:#221b3a;--body:"Manrope",system-ui,sans-serif;color-scheme:dark}
+html,body{background:transparent;height:100%}
+body{margin:0;color:var(--fg);font-family:var(--body);box-sizing:border-box}
+.card{background:var(--bg);border-radius:16px;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box;min-height:100%}
+.head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;gap:12px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.status{font-size:12px;color:var(--muted)}
+table{width:100%;border-collapse:collapse}
+th{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;text-align:left;padding:0 6px 6px}
+th.n,td.n{text-align:right}
+td{padding:7px 6px;border-top:1px solid var(--line);vertical-align:middle;font-size:13px}
+td.name{font-weight:700;white-space:nowrap}
+td.n{font-variant-numeric:tabular-nums;font-size:18px;font-weight:700;width:52px}
+td.n small{display:block;font-size:10px;color:var(--muted);font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+.strip{display:grid;grid-template-columns:repeat(30,1fr);gap:2px;min-width:160px}
+.strip i{display:block;aspect-ratio:1;border-radius:2px;background:var(--off)}
+.strip i.on{background:var(--accent)}
+.strip i.today{outline:1px solid var(--fg);outline-offset:1px}
+.fire{color:var(--accent)}
+.empty{color:var(--muted);font-size:13px;padding:12px 0}
+@media (max-width:520px){th.best,td.best{display:none}td.name{white-space:normal}}
+</style></head><body>
+<div class="card">
+  <div class="head"><span class="eyebrow">Streak board · last 30 days</span><span class="status" id="status">sample data</span></div>
+  <table><thead><tr><th>Habit</th><th>Last 30 days</th><th class="n">Streak</th><th class="n best">Best</th></tr></thead><tbody id="rows"></tbody></table>
+</div>
+<script>
+const TZ="Africa/Cairo";
+function ymd(d){return new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"}).format(d);}
+function addDays(s,n){const [y,m,d]=s.split("-").map(Number);return new Date(Date.UTC(y,m-1,d+n)).toISOString().slice(0,10);}
+function streaks(days,today){
+  let cur=0,d=today; if(!days[d])d=addDays(d,-1); while(days[d]){cur++;d=addDays(d,-1);}
+  let best=0,run=0,prev=null; for(const k of Object.keys(days).sort()){run=(prev&&addDays(prev,1)===k)?run+1:1;best=Math.max(best,run);prev=k;}
+  return[cur,best];
+}
+function render(habits){
+  const today=ymd(new Date()), tb=document.getElementById("rows"); tb.innerHTML="";
+  const list=Object.values(habits).map(h=>{const [c,b]=streaks(h.days||{},today);return{...h,cur:c,best:b};}).sort((a,b)=>b.cur-a.cur||b.best-a.best);
+  if(!list.length){tb.innerHTML='<tr><td colspan="4" class="empty">No habits yet — tick one in today\'s check-in.</td></tr>';return;}
+  for(const h of list){
+    const tr=document.createElement("tr");
+    let strip='<div class="strip">';
+    for(let i=29;i>=0;i--){const d=addDays(today,-i);strip+='<i class="'+(h.days[d]?"on":"")+(d===today?" today":"")+'" title="'+d+'"></i>';}
+    strip+='</div>';
+    tr.innerHTML='<td class="name">'+h.name+'</td><td>'+strip+'</td><td class="n"><span class="'+(h.cur>=3?"fire":"")+'">'+h.cur+'</span><small>days</small></td><td class="n best">'+h.best+'<small>best</small></td>';
+    tb.appendChild(tr);
+  }
+}
+render({a:{name:"Morning prayer",days:{}}});
+(async()=>{try{const r=await fetch("./data.json",{cache:"no-store"});const j=await r.json();render(j.habits||{});document.getElementById("status").textContent="updated "+(j.updated||"");}catch(e){}})();
+</script>
+</div></body></html>

@@ -1,0 +1,71 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Week in Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300&family=Manrope:wght@400;500;700&display=swap">
+<style>
+/* Layout: four stat tiles with a delta against last week, then a 7-bar mini chart of this week vs last. Week runs Saturday to Friday to match the Friday review. Dark card on a transparent page. */
+:root{--bg:#141020;--fg:#efeafb;--muted:#9b90bd;--accent:#b388ff;--line:#2b2347;--track:#241d3e;--up:#7fe3c0;--down:#ff9ec2;--display:"Fraunces",Georgia,serif;--body:"Manrope",system-ui,sans-serif;color-scheme:dark}
+html,body{background:transparent;height:100%}
+body{margin:0;color:var(--fg);font-family:var(--body);box-sizing:border-box}
+.card{background:var(--bg);border-radius:16px;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box;min-height:100%}
+.head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;gap:12px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.range{font-size:12px;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tile{border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.tile b{display:block;font-family:var(--display);font-weight:300;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.tile span{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.tile em{font-style:normal;font-size:11px;font-weight:700}
+.up{color:var(--up)}.down{color:var(--down)}.flat{color:var(--muted)}
+.chart{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:14px;align-items:end;height:70px}
+.day{display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.bars{display:flex;gap:3px;align-items:end;height:52px}
+.bars i{display:block;width:9px;border-radius:3px 3px 0 0;background:var(--track);min-height:2px}
+.bars i.now{background:var(--accent)}
+.day span{font-size:10px;color:var(--muted)}
+.note{font-family:var(--display);font-style:italic;font-weight:300;font-size:15px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+@media (max-width:520px){.tiles{grid-template-columns:repeat(2,1fr)}.tile b{font-size:28px}}
+</style></head><body>
+<div class="card">
+  <div class="head"><span class="eyebrow">Week in review</span><span class="range" id="range"></span></div>
+  <div class="tiles">
+    <div class="tile"><b id="votes">0</b><span>votes this week</span><em id="votesD"></em></div>
+    <div class="tile"><b id="days">0</b><span>active days of 7</span><em id="daysD"></em></div>
+    <div class="tile"><b id="tasks">0</b><span>tasks closed</span><em id="tasksD"></em></div>
+    <div class="tile"><b id="best">—</b><span>best day</span><em id="bestN"></em></div>
+  </div>
+  <div class="chart" id="chart"></div>
+  <div class="note" id="note"></div>
+</div>
+<script>
+const TZ="Africa/Cairo";
+function ymd(d){return new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"}).format(d);}
+function addDays(s,n){const [y,m,d]=s.split("-").map(Number);return new Date(Date.UTC(y,m-1,d+n)).toISOString().slice(0,10);}
+function dow(s){const [y,m,d]=s.split("-").map(Number);return new Date(Date.UTC(y,m-1,d)).getUTCDay();}
+function fmt(s){return new Date(s+"T00:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short"});}
+function delta(el,a,b,unit){const d=a-b;el.className=d>0?"up":d<0?"down":"flat";el.textContent=(d>0?"▲ +":d<0?"▼ ":"= ")+(d===0?"same":Math.abs(d)+" vs last week");}
+function render(j){
+  const counts=j.counts||{}, todos=j.todos||[], today=ymd(new Date());
+  const start=addDays(today,-((dow(today)+1)%7)); // Saturday
+  const prev=addDays(start,-7);
+  const week=i=>[...Array(7)].map((_,k)=>addDays(i,k));
+  const tw=week(start), lw=week(prev);
+  const sum=ds=>ds.reduce((a,d)=>a+(counts[d]||0),0), act=ds=>ds.filter(d=>counts[d]>0).length;
+  const closed=ds=>todos.filter(t=>t.done&&ds.includes(t.due)).length;
+  document.getElementById("range").textContent=fmt(start)+" – "+fmt(tw[6]);
+  document.getElementById("votes").textContent=sum(tw); delta(document.getElementById("votesD"),sum(tw),sum(lw));
+  document.getElementById("days").textContent=act(tw); delta(document.getElementById("daysD"),act(tw),act(lw));
+  document.getElementById("tasks").textContent=closed(tw); delta(document.getElementById("tasksD"),closed(tw),closed(lw));
+  const best=tw.reduce((b,d)=>(counts[d]||0)>(counts[b]||0)?d:b,tw[0]);
+  document.getElementById("best").textContent=counts[best]?new Date(best+"T00:00:00").toLocaleDateString("en-GB",{weekday:"short"}):"—";
+  document.getElementById("bestN").textContent=counts[best]?counts[best]+" votes":"";document.getElementById("bestN").className="flat";
+  const max=Math.max(1,...tw.map(d=>counts[d]||0),...lw.map(d=>counts[d]||0));
+  const ch=document.getElementById("chart"); ch.innerHTML="";
+  tw.forEach((d,i)=>{const el=document.createElement("div");el.className="day";
+    el.innerHTML='<div class="bars"><i style="height:'+Math.round(50*(counts[lw[i]]||0)/max)+'px" title="last week"></i><i class="now" style="height:'+Math.round(50*(counts[d]||0)/max)+'px" title="this week"></i></div><span>'+new Date(d+"T00:00:00").toLocaleDateString("en-GB",{weekday:"short"}).slice(0,2)+'</span>';
+    ch.appendChild(el);});
+  const dv=sum(tw)-sum(lw);
+  document.getElementById("note").textContent=dv>0?"Up on last week. Keep the chain going.":dv<0?"Down on last week. One small vote today puts it back on track.":"Level with last week. Where is the 20% that moves things?";
+}
+render({counts:{},todos:[]});
+(async()=>{try{const r=await fetch("./data.json",{cache:"no-store"});render(await r.json());}catch(e){}})();
+</script>
+</div></body></html>

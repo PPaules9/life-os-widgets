@@ -1,0 +1,54 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Project Rings</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap">
+<style>
+/* Layout: a responsive grid of rings, one per project — fill = milestones done, colour = life area, label under. Dark card on a transparent page. */
+:root{--bg:#141020;--fg:#efeafb;--muted:#9b90bd;--accent:#b388ff;--line:#2b2347;--track:#241d3e;--body:"Manrope",system-ui,sans-serif;color-scheme:dark;
+  --c-God:#c9a2ff;--c-Entrepreneur:#7fb3ff;--c-Athlete:#7fe3c0;--c-Husband:#ff9ec2;--c-Salesman:#ffc27f;--c-Character:#e3d97f}
+html,body{background:transparent;height:100%}
+body{margin:0;color:var(--fg);font-family:var(--body);box-sizing:border-box}
+.card{background:var(--bg);border-radius:16px;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box;min-height:100%}
+.head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;gap:12px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.status{font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:14px}
+.p{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:0}
+.ring{width:84px;height:84px;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:7}
+.ring .t{stroke:var(--track)}
+.ring .f{stroke-linecap:round;transition:stroke-dashoffset .8s ease}
+.ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+.name{font-size:12px;font-weight:700;line-height:1.25;text-wrap:balance}
+.meta{font-size:10px;color:var(--muted);letter-spacing:.04em}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:10px;border-top:1px solid var(--line);font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--c)}
+@media (prefers-reduced-motion:reduce){.ring .f{transition:none}}
+</style></head><body>
+<div class="card">
+  <div class="head"><span class="eyebrow">Projects · milestones done</span><span class="status" id="status">sample data</span></div>
+  <div class="grid" id="grid"></div>
+  <div class="legend" id="legend"></div>
+</div>
+<script>
+const R=35, C=2*Math.PI*R;
+const order=["God","Entrepreneur","Athlete","Husband","Salesman","Character"];
+function render(ps){
+  const g=document.getElementById("grid"); g.innerHTML="";
+  ps=ps.filter(p=>p.status!=="V Closed (Achieved)"&&p.status!=="V Closed (Not Achieved)")
+       .sort((a,b)=>order.indexOf(a.area)-order.indexOf(b.area)||a.name.localeCompare(b.name));
+  for(const p of ps){
+    const pct=p.total?p.done/p.total:0, col="var(--c-"+(p.area||"God")+")";
+    const el=document.createElement("div"); el.className="p";
+    const nxt=p.next?new Date(p.next+"T00:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short"}):"—";
+    el.innerHTML='<div class="ring"><svg viewBox="0 0 84 84"><circle class="t" cx="42" cy="42" r="'+R+'"/><circle class="f" cx="42" cy="42" r="'+R+'" style="stroke:'+col+';stroke-dasharray:'+C+';stroke-dashoffset:'+C+'"/></svg><b>'+p.done+'/'+p.total+'</b></div>'+
+      '<div class="name">'+p.name+'</div><div class="meta">'+(p.status||"").replace(/^[IV]+ /,"")+' · next '+nxt+'</div>';
+    g.appendChild(el);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{el.querySelector(".f").style.strokeDashoffset=C*(1-pct);}));
+  }
+  const lg=document.getElementById("legend"); lg.innerHTML="";
+  for(const a of order){const s=document.createElement("span");s.style.setProperty("--c","var(--c-"+a+")");s.textContent=a;lg.appendChild(s);}
+}
+render([{name:"Climo",area:"Entrepreneur",status:"II Execution",done:0,total:3,next:"2026-11-10"}]);
+(async()=>{try{const r=await fetch("./data.json",{cache:"no-store"});const j=await r.json();render(j.projects||[]);document.getElementById("status").textContent="updated "+(j.updated||"");}catch(e){}})();
+</script>
+</div></body></html>

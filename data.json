@@ -74,5 +74,125 @@
     "2026-10-23": 1
    }
   }
- }
+ },
+ "projects": [
+  {
+   "name": "Climo",
+   "status": "II Execution",
+   "area": "Entrepreneur",
+   "done": 0,
+   "total": 3,
+   "next": "2026-11-10"
+  },
+  {
+   "name": "Reading Business Books",
+   "status": "II Execution",
+   "area": "Entrepreneur",
+   "done": 0,
+   "total": 2,
+   "next": "2026-11-05"
+  },
+  {
+   "name": "Building My Software Company",
+   "status": "I Planning",
+   "area": "Entrepreneur",
+   "done": 0,
+   "total": 1,
+   "next": "2026-11-30"
+  },
+  {
+   "name": "Be a Servant in the Church",
+   "status": "I Planning",
+   "area": "God",
+   "done": 0,
+   "total": 1,
+   "next": "2026-11-15"
+  },
+  {
+   "name": "Building a Personal Reputation Online",
+   "status": "Brainstorming",
+   "area": "Salesman",
+   "done": 0,
+   "total": 1,
+   "next": "2026-12-15"
+  },
+  {
+   "name": "Being Close to God",
+   "status": "II Execution",
+   "area": "God",
+   "done": 0,
+   "total": 2,
+   "next": "2026-11-20"
+  },
+  {
+   "name": "Being Well-Read",
+   "status": "II Execution",
+   "area": "Character",
+   "done": 0,
+   "total": 1,
+   "next": "2026-11-12"
+  },
+  {
+   "name": "Weekly Date Night",
+   "status": "I Planning",
+   "area": "Husband",
+   "done": 0,
+   "total": 1,
+   "next": "2026-11-21"
+  },
+  {
+   "name": "Train 4x a Week",
+   "status": "II Execution",
+   "area": "Athlete",
+   "done": 0,
+   "total": 1,
+   "next": "2026-12-05"
+  }
+ ],
+ "todos": [
+  {
+   "done": false,
+   "due": "2026-10-23"
+  },
+  {
+   "done": false,
+   "due": "2026-10-27"
+  },
+  {
+   "done": false,
+   "due": "2026-10-24"
+  },
+  {
+   "done": false,
+   "due": "2026-10-26"
+  },
+  {
+   "done": false,
+   "due": "2026-10-21"
+  },
+  {
+   "done": true,
+   "due": "2026-10-20"
+  },
+  {
+   "done": false,
+   "due": "2026-10-25"
+  },
+  {
+   "done": false,
+   "due": "2026-11-03"
+  },
+  {
+   "done": false,
+   "due": "2026-10-23"
+  },
+  {
+   "done": false,
+   "due": "2026-10-28"
+  },
+  {
+   "done": true,
+   "due": "2026-10-18"
+  }
+ ]
 }
