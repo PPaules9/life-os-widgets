@@ -31,20 +31,22 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);paddi
 </style>
 <div class="wrap">
   <div class="grid-wrap">
-    <div class="head"><span class="eyebrow">Habit votes · last 16 weeks</span><span class="status" id="status">sample data</span></div>
+    <div class="head"><span class="eyebrow" id="title">Habit votes · last 16 weeks</span><span class="status" id="status">sample data</span></div>
     <div class="months" id="months"></div>
     <div class="grid" id="grid"><div class="days"><span>Sun</span><span></span><span>Tue</span><span></span><span>Thu</span><span></span><span>Sat</span></div></div>
     <div class="legend">less <i class="cell"></i><i class="cell c1"></i><i class="cell c2"></i><i class="cell c3"></i><i class="cell c4"></i> more</div>
   </div>
   <div class="stats">
     <div class="stat"><b id="streak">0</b><span>day streak</span></div>
-    <div class="stat"><b id="total">0</b><span>votes this month</span></div>
-    <div class="stat"><b id="best">0</b><span>best day</span></div>
+    <div class="stat"><b id="total">0</b><span id="totalLbl">votes this month</span></div>
+    <div class="stat"><b id="best">0</b><span id="bestLbl">best day</span></div>
   </div>
 </div>
 <div class="tip" id="tip"></div>
 <script>
-const TZ="Africa/Cairo", DS="collection://1309455c-9d68-4fa5-929a-9d63cc6beb04";
+const TZ="Africa/Cairo";
+const HABIT=new URLSearchParams(location.search).get("habit");
+let habitName="";
 // Fallback until data.json loads.
 let counts={"2026-10-16":3,"2026-10-17":2,"2026-10-18":4,"2026-10-19":5,"2026-10-20":3,"2026-10-21":5,"2026-10-22":4};
 function ymd(d){return new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"}).format(d);}
@@ -61,7 +63,7 @@ function render(){
   for(let i=0;i<16*7;i++){
     const d=addDays(start,i), n=counts[d]||0;
     const c=document.createElement("i"); c.className="cell";
-    if(n>0){const r=n/max; c.classList.add(r<=.25?"c1":r<=.5?"c2":r<=.75?"c3":"c4");}
+    if(n>0){const r=HABIT?1:n/max; c.classList.add(r<=.25?"c1":r<=.5?"c2":r<=.75?"c3":"c4");}
     if(d===today)c.classList.add("today");
     if(d>today)c.style.opacity=".35";
     c.dataset.d=d; c.dataset.n=n; grid.appendChild(c);
@@ -73,17 +75,29 @@ function render(){
   const total=Object.entries(counts).filter(([k])=>k.startsWith(mon)).reduce((a,[,v])=>a+v,0);
   document.getElementById("streak").textContent=streak;
   document.getElementById("total").textContent=total;
-  document.getElementById("best").textContent=Math.max(0,...Object.values(counts));
+  if(HABIT){
+    const done=Object.keys(counts).filter(k=>counts[k]>0).length, days=Object.keys(counts).length;
+    const [y,m]=mon.split("-").map(Number); const dim=new Date(Date.UTC(y,m,0)).getUTCDate();
+    document.getElementById("totalLbl").textContent="days this month";
+    document.getElementById("bestLbl").textContent="of "+dim+" days";
+    document.getElementById("best").textContent=Math.round(100*total/dim)+"%";
+    let best=0,run=0,prev=null; for(const k of Object.keys(counts).sort()){run=(prev&&addDays(prev,1)===k)?run+1:1;best=Math.max(best,run);prev=k;}
+    document.getElementById("bestLbl").textContent="best streak"; document.getElementById("best").textContent=best;
+  } else document.getElementById("best").textContent=Math.max(0,...Object.values(counts));
 }
 const tip=document.getElementById("tip");
-document.getElementById("grid").addEventListener("mousemove",e=>{const c=e.target.closest(".cell");if(!c){tip.style.display="none";return;}tip.textContent=c.dataset.d+" · "+c.dataset.n+(c.dataset.n==1?" vote":" votes");tip.style.display="block";tip.style.left=(e.clientX+10)+"px";tip.style.top=(e.clientY+10)+"px";});
+document.getElementById("grid").addEventListener("mousemove",e=>{const c=e.target.closest(".cell");if(!c){tip.style.display="none";return;}tip.textContent=HABIT?(c.dataset.d+(c.dataset.n>0?" · done":" · missed")):(c.dataset.d+" · "+c.dataset.n+(c.dataset.n==1?" vote":" votes"));tip.style.display="block";tip.style.left=(e.clientX+10)+"px";tip.style.top=(e.clientY+10)+"px";});
 document.getElementById("grid").addEventListener("mouseleave",()=>tip.style.display="none");
 render();
 (async()=>{
   const status=document.getElementById("status");
   try{
     const r=await fetch("./data.json",{cache:"no-store"}); if(!r.ok)throw 0;
-    const j=await r.json(); counts=j.counts||{}; render();
+    const j=await r.json();
+    if(HABIT){const h=(j.habits||{})[HABIT]; if(!h)throw 0; counts=h.days||{}; habitName=h.name;
+      document.getElementById("title").textContent=habitName+" · last 16 weeks"; document.title=habitName+" Heatmap";}
+    else counts=j.counts||{};
+    render();
     status.textContent="updated "+(j.updated||"");
   }catch(e){status.textContent="sample data";}
 })();
