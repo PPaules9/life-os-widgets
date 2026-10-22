@@ -10,9 +10,10 @@
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box}
 .wrap{display:flex;flex-direction:column;gap:14px;min-height:130px;justify-content:center}
-.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;display:flex;justify-content:space-between;align-items:center}
-.eyebrow button{background:none;border:1px solid var(--line);color:var(--muted);font:inherit;letter-spacing:.08em;padding:4px 10px;border-radius:999px;cursor:pointer}
-.eyebrow button:hover,.eyebrow button:focus-visible{color:var(--fg);border-color:var(--accent);outline:none}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.foot button{background:none;border:1px solid var(--line);color:var(--muted);font:inherit;letter-spacing:.08em;padding:4px 10px;border-radius:999px;cursor:pointer}
+.foot button:hover,.foot button:focus-visible{color:var(--fg);border-color:var(--accent);outline:none}
 .line{font-family:var(--display);font-weight:500;font-size:30px;line-height:1.2;letter-spacing:-.01em;text-wrap:balance;max-width:28ch;transition:opacity .35s}
 .line.fade{opacity:0}
 .sub{font-family:var(--display);font-style:italic;font-weight:300;font-size:17px;color:var(--muted);max-width:60ch}
@@ -23,10 +24,10 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);paddi
 @media (prefers-reduced-motion:reduce){.line{transition:none}}
 </style>
 <div class="wrap">
-  <div class="eyebrow"><span>My Manifesto</span><button id="next" type="button">Next ›</button></div>
+  <div class="eyebrow">My Manifesto</div>
   <div class="line" id="line"></div>
   <div class="sub" id="sub"></div>
-  <div class="rail" id="rail"></div>
+  <div class="foot"><div class="rail" id="rail"></div><button id="next" type="button">Next ›</button></div>
 </div>
 <script>
 const lines=[
