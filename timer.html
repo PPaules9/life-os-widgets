@@ -1,4 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Focus Timer</title></head><body>
+<div class="card">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300&family=Manrope:wght@400;500;700&display=swap">
 <style>
 /* Layout: a ring with the countdown inside, mode pills above, start/reset below; session count persists per browser. Dark look to match the Life OS page. */
@@ -7,7 +8,9 @@
   --display:"Fraunces",Georgia,serif; --body:"Manrope",system-ui,sans-serif; color-scheme:dark;
 }
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box}
+html,body{background:transparent}
+body{margin:0;color:var(--fg);font-family:var(--body);box-sizing:border-box}
+.card{background:var(--bg);border-radius:16px;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box;min-height:100%}
 .wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
 .modes{display:flex;gap:6px}
 .modes button{background:var(--panel);border:1px solid var(--line);color:var(--muted);font:inherit;font-size:12px;font-weight:500;padding:6px 12px;border-radius:999px;cursor:pointer}
@@ -77,4 +80,5 @@ document.querySelectorAll(".modes button").forEach(b=>b.addEventListener("click"
 draw();
 </script>
 
+</div>
 </body></html>

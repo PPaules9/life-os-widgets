@@ -1,4 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Manifesto Rotator</title></head><body>
+<div class="card">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=Manrope:wght@400;500;700&display=swap">
 <style>
 /* Layout: one principle at a time, large; a dot rail shows position; new line each visit and every 20s. Dark look to match the Life OS page. */
@@ -8,7 +9,9 @@
   color-scheme:dark;
 }
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box}
+html,body{background:transparent}
+body{margin:0;color:var(--fg);font-family:var(--body);box-sizing:border-box}
+.card{background:var(--bg);border-radius:16px;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box;min-height:100%}
 .wrap{display:flex;flex-direction:column;gap:14px;min-height:130px;justify-content:center}
 .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
 .foot{display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -57,4 +60,5 @@ let timer=setInterval(advance,20000);
 document.getElementById("next").addEventListener("click",()=>{clearInterval(timer);advance();timer=setInterval(advance,20000);});
 </script>
 
+</div>
 </body></html>

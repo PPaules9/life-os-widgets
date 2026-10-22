@@ -1,4 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Life OS Daily Bar</title></head><body>
+<div class="card">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300;1,9..144,400&family=Manrope:wght@400;500;700&display=swap">
 <style>
 /* Layout: one dark band, clock on the left, verse of the day filling the rest; stacks on phones. Single deliberate dark look to sit inside the dark Notion page. */
@@ -8,7 +9,9 @@
   color-scheme:dark;
 }
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box}
+html,body{background:transparent}
+body{margin:0;color:var(--fg);font-family:var(--body);box-sizing:border-box}
+.card{background:var(--bg);border-radius:16px;padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box;min-height:100%}
 .bar{display:flex;gap:28px;align-items:stretch;min-height:120px}
 .clock{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;padding-right:28px;border-right:1px solid var(--line);min-width:150px}
 .time{font-family:var(--display);font-weight:300;font-size:52px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
@@ -87,4 +90,5 @@ document.getElementById("vref").textContent=v[1];
 tick(); setInterval(tick,1000);
 </script>
 
+</div>
 </body></html>
