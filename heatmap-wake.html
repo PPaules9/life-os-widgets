@@ -1,0 +1,113 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Habit Heatmap</title></head><body>
+<div class="card">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap">
+<style>
+/* Layout: 16-week contribution grid (columns = weeks, rows = Sun..Sat), streak and total stats on the right; stacks on phones. Dark look to match the Life OS page. */
+:root{
+  --bg:#141020; --fg:#efeafb; --muted:#9b90bd; --accent:#b388ff; --line:#2b2347;
+  --l0:#1f1836; --l1:#3d2d6b; --l2:#5e4a9c; --l3:#8a6ad6; --l4:#b388ff;
+  --body:"Manrope",system-ui,sans-serif; color-scheme:dark;
+}
+html,body{height:100%}
+html,body{background:transparent}
+body{margin:0;color:var(--fg);font-family:var(--body);box-sizing:border-box}
+.card{background:var(--bg);border-radius:16px;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box;min-height:100%}
+.wrap{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap}
+.grid-wrap{flex:1 1 420px;min-width:0;overflow-x:auto}
+.head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:12px}
+.name{font-size:20px;font-weight:700;letter-spacing:-.01em;color:var(--fg);margin:0 0 4px}
+.name:empty{display:none}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.status{font-size:12px;color:var(--muted)}
+.status.err{color:#f0a0a0}
+.months{display:grid;grid-auto-flow:column;grid-auto-columns:16px;gap:3px;font-size:10px;color:var(--muted);margin-left:28px;height:14px}
+.months span{white-space:nowrap}
+.grid{display:grid;grid-template-rows:repeat(7,13px);grid-auto-flow:column;grid-auto-columns:13px;gap:3px;margin-left:28px;position:relative}
+.days{position:absolute;left:-28px;top:0;display:grid;grid-template-rows:repeat(7,13px);gap:3px;font-size:10px;color:var(--muted);line-height:13px}
+.cell{width:13px;height:13px;border-radius:3px;background:var(--l0)}
+.c1{background:var(--l1)}.c2{background:var(--l2)}.c3{background:var(--l3)}.c4{background:var(--l4)}
+.cell.today{outline:1px solid var(--fg);outline-offset:1px}
+.legend{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);margin-top:10px;margin-left:28px}
+.legend .cell{width:10px;height:10px}
+.stats{flex:0 0 150px;display:grid;gap:14px}
+.stat b{display:block;font-size:30px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.stat span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.tip{position:fixed;pointer-events:none;background:#000c;color:#fff;font-size:11px;padding:4px 8px;border-radius:4px;display:none;z-index:5}
+</style>
+<div class="wrap">
+  <div class="grid-wrap">
+    <h1 class="name" id="name"></h1>
+    <div class="head"><span class="eyebrow" id="title">Habit votes · last 16 weeks</span><span class="status" id="status">sample data</span></div>
+    <div class="months" id="months"></div>
+    <div class="grid" id="grid"><div class="days"><span>Sun</span><span></span><span>Tue</span><span></span><span>Thu</span><span></span><span>Sat</span></div></div>
+    <div class="legend">less <i class="cell"></i><i class="cell c1"></i><i class="cell c2"></i><i class="cell c3"></i><i class="cell c4"></i> more</div>
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="streak">0</b><span>day streak</span></div>
+    <div class="stat"><b id="total">0</b><span id="totalLbl">votes this month</span></div>
+    <div class="stat"><b id="best">0</b><span id="bestLbl">best day</span></div>
+  </div>
+</div>
+<div class="tip" id="tip"></div>
+<script>
+const TZ="Africa/Cairo";
+const HABIT="wake";
+let habitName="";
+// Fallback until data.json loads.
+let counts={"2026-10-16":3,"2026-10-17":2,"2026-10-18":4,"2026-10-19":5,"2026-10-20":3,"2026-10-21":5,"2026-10-22":4};
+function ymd(d){return new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"}).format(d);}
+function addDays(s,n){const [y,m,d]=s.split("-").map(Number);const t=new Date(Date.UTC(y,m-1,d+n));return t.toISOString().slice(0,10);}
+function dow(s){const [y,m,d]=s.split("-").map(Number);return new Date(Date.UTC(y,m-1,d)).getUTCDay();}
+function render(){
+  const today=ymd(new Date());
+  const end=addDays(today,6-dow(today));
+  const start=addDays(end,-(16*7-1));
+  const grid=document.getElementById("grid"); grid.querySelectorAll(".cell").forEach(c=>c.remove());
+  const months=document.getElementById("months"); months.innerHTML="";
+  const max=Math.max(1,...Object.values(counts));
+  let lastMonth="", week=0;
+  for(let i=0;i<16*7;i++){
+    const d=addDays(start,i), n=counts[d]||0;
+    const c=document.createElement("i"); c.className="cell";
+    if(n>0){const r=HABIT?1:n/max; c.classList.add(r<=.25?"c1":r<=.5?"c2":r<=.75?"c3":"c4");}
+    if(d===today)c.classList.add("today");
+    if(d>today)c.style.opacity=".35";
+    c.dataset.d=d; c.dataset.n=n; grid.appendChild(c);
+    if(i%7===0){const mo=new Intl.DateTimeFormat("en",{month:"short",timeZone:"UTC"}).format(new Date(d+"T00:00:00Z"));const s=document.createElement("span");s.textContent=mo!==lastMonth?mo:"";months.appendChild(s);lastMonth=mo;week++;}
+  }
+  let streak=0,d=today; if(!counts[d])d=addDays(d,-1);
+  while(counts[d]>0){streak++;d=addDays(d,-1);}
+  const mon=today.slice(0,7);
+  const total=Object.entries(counts).filter(([k])=>k.startsWith(mon)).reduce((a,[,v])=>a+v,0);
+  document.getElementById("streak").textContent=streak;
+  document.getElementById("total").textContent=total;
+  if(HABIT){
+    const done=Object.keys(counts).filter(k=>counts[k]>0).length, days=Object.keys(counts).length;
+    const [y,m]=mon.split("-").map(Number); const dim=new Date(Date.UTC(y,m,0)).getUTCDate();
+    document.getElementById("totalLbl").textContent="days this month";
+    document.getElementById("bestLbl").textContent="of "+dim+" days";
+    document.getElementById("best").textContent=Math.round(100*total/dim)+"%";
+    let best=0,run=0,prev=null; for(const k of Object.keys(counts).sort()){run=(prev&&addDays(prev,1)===k)?run+1:1;best=Math.max(best,run);prev=k;}
+    document.getElementById("bestLbl").textContent="best streak"; document.getElementById("best").textContent=best;
+  } else document.getElementById("best").textContent=Math.max(0,...Object.values(counts));
+}
+const tip=document.getElementById("tip");
+document.getElementById("grid").addEventListener("mousemove",e=>{const c=e.target.closest(".cell");if(!c){tip.style.display="none";return;}tip.textContent=HABIT?(c.dataset.d+(c.dataset.n>0?" · done":" · missed")):(c.dataset.d+" · "+c.dataset.n+(c.dataset.n==1?" vote":" votes"));tip.style.display="block";tip.style.left=(e.clientX+10)+"px";tip.style.top=(e.clientY+10)+"px";});
+document.getElementById("grid").addEventListener("mouseleave",()=>tip.style.display="none");
+render();
+(async()=>{
+  const status=document.getElementById("status");
+  try{
+    const r=await fetch("./data.json",{cache:"no-store"}); if(!r.ok)throw 0;
+    const j=await r.json();
+    if(HABIT){const h=(j.habits||{})[HABIT]; if(!h)throw 0; counts=h.days||{}; habitName=h.name;
+      document.getElementById("name").textContent=habitName; document.getElementById("title").textContent="Last 16 weeks"; document.title=habitName+" Heatmap";}
+    else counts=j.counts||{};
+    render();
+    status.textContent="updated "+(j.updated||"");
+  }catch(e){status.textContent="sample data";}
+})();
+</script>
+
+</div>
+</body></html>
