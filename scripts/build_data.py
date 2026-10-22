@@ -1,19 +1,19 @@
 """Build data.json for the Life OS widgets from Notion exports.
 Usage: python3 scripts/build_data.py checkins.json [milestones.json projects.json todos.json] > data.json
-checkins:   [{"d":"YYYY-MM-DD","h":"[\"https://app.notion.com/<id>\",...]"}]
+checkins:   [{"d":"YYYY-MM-DD","Wake Early":"__YES__","Pray AM":..., ...}]  (one checkbox column per habit)
 milestones: [{"m":name,"s":status,"p":"[\"<project url>\"]","due":"YYYY-MM-DD"}]
 projects:   [{"url":..., "n":name, "s":status, "a":"[\"<area url>\"]"}]
 todos:      [{"n":name,"s":status,"d":"__YES__|__NO__","due":"YYYY-MM-DD"}]
 """
 import json, sys, datetime, re
-HABITS = {
-    "gym":  ("4015745be48681459b7ec613a9342730", "Gym / run"),
-    "wake": ("4015745be4868193ae60c86c0336a9e1", "Wake up early"),
-    "pray-am": ("4015745be48681838530e9763b76e99c", "Morning prayer"),
-    "pray-pm": ("4015745be486812498d7f95dccf5fbd3", "Evening prayer"),
-    "church": ("4015745be48681ffb22cf26fc79c3948", "Church"),
-    "read-biz": ("4015745be48681f6b050f3809dd3529f", "Business book"),
-    "read-med": ("4015745be48681ca90b7fbb0ac8ea93d", "Meditations"),
+HABITS = {  # short key -> (Daily Check-in checkbox column, display name)
+    "wake": ("Wake Early", "Wake up early"),
+    "pray-am": ("Pray AM", "Morning prayer"),
+    "pray-pm": ("Pray PM", "Evening prayer"),
+    "church": ("Church", "Church"),
+    "gym": ("Gym", "Gym / run"),
+    "read-biz": ("Business Book", "Business book"),
+    "read-med": ("Meditations", "Meditations"),
 }
 AREAS = {
     "ded5745be4868396a0d501e2019c560c": "God",
@@ -31,10 +31,11 @@ counts, habits = {}, {k: {"name": v[1], "days": {}} for k, v in HABITS.items()}
 for r in rows:
     d = (r.get("d") or "")[:10]
     if not d: continue
-    ids = [pid(u) for u in json.loads(r.get("h") or "[]")]
-    counts[d] = counts.get(d, 0) + len(ids)
-    for k, (h, _) in HABITS.items():
-        if h in ids: habits[k]["days"][d] = 1
+    n = 0
+    for k, (col, _) in HABITS.items():
+        if r.get(col) == "__YES__":
+            habits[k]["days"][d] = 1; n += 1
+    if n: counts[d] = counts.get(d, 0) + n
 
 proj = {}
 for p in ps:
