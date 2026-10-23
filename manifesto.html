@@ -32,18 +32,10 @@ body{margin:0;color:var(--fg);font-family:var(--body);box-sizing:border-box}
   <div class="sub" id="sub"></div>
   <div class="foot"><div class="rail" id="rail"></div><button id="next" type="button">Next ›</button></div>
 </div>
+<script src="manifesto-lines.js"></script>
 <script>
-const lines=[
-["Jesus was with Joseph, so Joseph was a successful man.","God first. Everything else follows."],
-["Live in the future.","If today were the last day of my life, would I want to do what I’m about to do today?"],
-["Build companies, not features.","Think in systems, not tasks."],
-["Speed with accuracy.","Reversible decisions fast. Irreversible ones carefully."],
-["80/20 everything.","Protect the few things that move the needle."],
-["Clear ownership.","Every outcome has one owner, measured on results."],
-["Small, high-quality teams.","Hire people who do the work better than me."],
-["Calm. Calculated. Never reactive.","The room follows the calmest person in it."],
-["Remove.","Archive, never delete. Friday: a ten-minute sweep."]
-];
+/* Lines live in manifesto-lines.js (shared with the daily card in index.html). */
+const lines=window.MANIFESTO||[];
 let i=Math.floor(Math.random()*lines.length);
 const rail=document.getElementById("rail");
 lines.forEach(()=>rail.appendChild(document.createElement("i")));

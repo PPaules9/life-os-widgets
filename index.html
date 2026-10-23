@@ -1,74 +1,113 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Life OS Daily Bar</title></head><body>
-<div class="card">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300;1,9..144,400&family=Manrope:wght@400;500;700&display=swap">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Life OS Daily Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=Manrope:wght@400;500;700&display=swap">
 <style>
-/* Layout: one dark band, clock on the left, verse of the day filling the rest; stacks on phones. Single deliberate dark look to sit inside the dark Notion page. */
+/* Layout: one dark card. Top band: clock on the left, the Arabic verse of the day on the right (RTL).
+   Bottom band: My Manifesto, one principle at a time (new one each visit and every 20s).
+   Stacks on phones. Single dark look to sit inside the dark Notion page. */
 :root{
-  --bg:#141020; --panel:#1b1530; --fg:#efeafb; --muted:#9b90bd; --accent:#b388ff; --accent-dim:#5e4a9c; --line:#2b2347;
+  --bg:#141020; --fg:#efeafb; --muted:#9b90bd; --accent:#b388ff; --line:#2b2347;
   --display:"Fraunces",Georgia,serif; --body:"Manrope",system-ui,sans-serif;
+  --arabic:"Amiri","Geeza Pro","Noto Naskh Arabic",serif;
   color-scheme:dark;
 }
-html,body{height:100%}
-html,body{background:transparent}
-body{margin:0;color:var(--fg);font-family:var(--body);box-sizing:border-box}
-.card{background:var(--bg);border-radius:16px;padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box;min-height:100%}
-.bar{display:flex;gap:28px;align-items:stretch;min-height:120px}
-.clock{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;padding-right:28px;border-right:1px solid var(--line);min-width:150px}
+html,body{height:100%;margin:0;background:transparent}
+body{color:var(--fg);font-family:var(--body)}
+.card{box-sizing:border-box;height:100%;background:var(--bg);border-radius:16px;
+  padding:18px max(22px,env(safe-area-inset-right,0px)) 16px max(22px,env(safe-area-inset-left,0px));
+  display:flex;flex-direction:column;gap:16px;overflow:auto;scrollbar-width:none}
+.card::-webkit-scrollbar{display:none}
+
+/* top band: clock | verse */
+.top{flex:1 1 auto;display:flex;gap:28px;align-items:center}
+.clock{flex:0 0 auto;align-self:stretch;display:flex;flex-direction:column;justify-content:center;padding-right:28px;border-right:1px solid var(--line);min-width:150px}
 .time{font-family:var(--display);font-weight:300;font-size:52px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .time small{font-size:18px;color:var(--accent);margin-left:4px;font-family:var(--body);font-weight:500}
 .date{color:var(--muted);font-size:13px;margin-top:8px;letter-spacing:.04em;text-transform:uppercase}
-.verse{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:10px}
-.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
-.text{font-family:var(--display);font-style:italic;font-weight:300;font-size:22px;line-height:1.35;text-wrap:balance;max-width:60ch}
-.ref{color:var(--muted);font-size:13px;font-weight:500}
-@media (max-width:560px){.bar{flex-direction:column;gap:18px}.clock{border-right:0;border-bottom:1px solid var(--line);padding-right:0;padding-bottom:14px}.time{font-size:44px}.text{font-size:19px}}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
-</style>
-<div class="bar">
-  <div class="clock">
-    <div class="time" id="time" aria-live="off">--:--<small id="ampm"></small></div>
-    <div class="date" id="date"></div>
+.verse{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:6px;font-family:var(--arabic)}
+.verse .eyebrow{font-weight:700;font-size:15px;color:var(--accent)}
+.verse .text{margin:0;font-size:25px;line-height:1.75;text-wrap:balance}
+.verse .ref{font-size:16px;color:var(--muted)}
+
+/* bottom band: manifesto */
+.manifesto{flex:0 0 auto;border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:6px}
+.label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.line{font-family:var(--display);font-weight:500;font-size:27px;line-height:1.2;letter-spacing:-.01em;text-wrap:balance;transition:opacity .35s}
+.sub{font-family:var(--display);font-style:italic;font-weight:300;font-size:17px;line-height:1.4;color:var(--muted);max-width:62ch;transition:opacity .35s}
+.fade{opacity:0}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:4px}
+.rail{display:flex;gap:6px}
+.rail i{width:18px;height:3px;border-radius:2px;background:var(--line)}
+.rail i.on{background:var(--accent)}
+.foot button{background:none;border:1px solid var(--line);color:var(--muted);font:inherit;font-size:13px;letter-spacing:.08em;padding:4px 12px;border-radius:999px;cursor:pointer}
+.foot button:hover,.foot button:focus-visible{color:var(--fg);border-color:var(--accent);outline:none}
+
+@media (max-width:560px){
+  .card{gap:12px;padding:14px 16px}
+  .top{flex-direction:column;align-items:stretch;gap:12px}
+  .clock{flex-direction:row;align-items:baseline;justify-content:space-between;gap:12px;min-width:0;padding:0 0 10px;border-right:0;border-bottom:1px solid var(--line)}
+  .time{font-size:36px}.time small{font-size:15px}
+  .date{margin-top:0;font-size:11px;text-align:right}
+  .verse .text{font-size:21px}
+  .line{font-size:22px}.sub{font-size:15px}
+}
+@media (prefers-reduced-motion:reduce){.line,.sub{transition:none}}
+</style></head><body>
+<div class="card">
+  <div class="top">
+    <div class="clock">
+      <div class="time" id="time" aria-live="off">--:--<small id="ampm"></small></div>
+      <div class="date" id="date"></div>
+    </div>
+    <div class="verse" dir="rtl" lang="ar">
+      <div class="eyebrow">آية اليوم</div>
+      <p class="text" id="vtext"></p>
+      <div class="ref" id="vref"></div>
+    </div>
   </div>
-  <div class="verse">
-    <div class="eyebrow">Verse of the day</div>
-    <div class="text" id="vtext"></div>
-    <div class="ref" id="vref"></div>
+  <div class="manifesto">
+    <div class="label">My Manifesto</div>
+    <div class="line" id="line"></div>
+    <div class="sub" id="sub"></div>
+    <div class="foot"><div class="rail" id="rail" aria-hidden="true"></div><button id="next" type="button">Next ›</button></div>
   </div>
 </div>
+<script src="manifesto-lines.js"></script>
 <script>
 const TZ="Africa/Cairo";
+/* Verse of the day: Van Dyke Arabic Bible (ترجمة فاندايك), one per day, same verse all day. */
 const verses=[
-["Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.","Proverbs 3:5-6"],
-["The Lord was with Joseph, and he was a successful man.","Genesis 39:2"],
-["Be holy, because I am holy.","1 Peter 1:16"],
-["I can do all things through Christ who strengthens me.","Philippians 4:13"],
-["Commit your work to the Lord, and your plans will be established.","Proverbs 16:3"],
-["But seek first the kingdom of God and his righteousness, and all these things will be added to you.","Matthew 6:33"],
-["Whatever you do, work at it with all your heart, as working for the Lord.","Colossians 3:23"],
-["Abraham believed the Lord, and he credited it to him as righteousness.","Genesis 15:6"],
-["He was called a friend of God.","James 2:23"],
-["For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future.","Jeremiah 29:11"],
-["Do you not know that your bodies are temples of the Holy Spirit? Therefore honor God with your bodies.","1 Corinthians 6:19-20"],
-["Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.","Joshua 1:9"],
-["Husbands, love your wives, just as Christ loved the church and gave himself up for her.","Ephesians 5:25"],
-["Therefore what God has joined together, let no one separate.","Mark 10:9"],
-["The plans of the diligent lead surely to abundance.","Proverbs 21:5"],
-["Let your light shine before others, that they may see your good deeds and glorify your Father in heaven.","Matthew 5:16"],
-["Whoever can be trusted with very little can also be trusted with much.","Luke 16:10"],
-["In the morning, Lord, you hear my voice; in the morning I lay my requests before you and wait expectantly.","Psalm 5:3"],
-["Be still, and know that I am God.","Psalm 46:10"],
-["Do not conform to the pattern of this world, but be transformed by the renewing of your mind.","Romans 12:2"],
-["A gentle answer turns away wrath, but a harsh word stirs up anger.","Proverbs 15:1"],
-["Whoever is slow to anger is better than the mighty, and he who rules his spirit than he who takes a city.","Proverbs 16:32"],
-["The fear of the Lord is the beginning of wisdom.","Proverbs 9:10"],
-["Let us not become weary in doing good, for at the proper time we will reap a harvest if we do not give up.","Galatians 6:9"],
-["Draw near to God, and he will draw near to you.","James 4:8"],
-["Serve one another humbly in love.","Galatians 5:13"],
-["Your word is a lamp for my feet, a light on my path.","Psalm 119:105"],
-["Give thanks in all circumstances; for this is the will of God in Christ Jesus for you.","1 Thessalonians 5:18"],
-["Teach us to number our days, that we may gain a heart of wisdom.","Psalm 90:12"],
-["He who began a good work in you will carry it on to completion until the day of Christ Jesus.","Philippians 1:6"],
-["Cast all your anxiety on him because he cares for you.","1 Peter 5:7"]
+["توكّل على الرب بكل قلبك، وعلى فهمك لا تعتمد. في كل طرقك اعرفه، وهو يقوّم سبلك.","أمثال ٣: ٥-٦"],
+["وكان الرب مع يوسف فكان رجلًا ناجحًا.","تكوين ٣٩: ٢"],
+["كونوا قديسين لأني أنا قدوس.","١ بطرس ١: ١٦"],
+["أستطيع كل شيء في المسيح الذي يقوّيني.","فيلبي ٤: ١٣"],
+["ألقِ على الرب أعمالك فتُثبَّت أفكارك.","أمثال ١٦: ٣"],
+["لكن اطلبوا أولًا ملكوت الله وبرّه، وهذه كلها تُزاد لكم.","متى ٦: ٣٣"],
+["وكل ما فعلتم، فاعملوا من القلب، كما للرب ليس للناس.","كولوسي ٣: ٢٣"],
+["فآمن بالرب فحسبه له برًّا.","تكوين ١٥: ٦"],
+["فآمن إبراهيم بالله فحُسب له برًّا، ودُعي خليل الله.","يعقوب ٢: ٢٣"],
+["لأني عرفت الأفكار التي أنا مفتكر بها عنكم، يقول الرب، أفكار سلام لا شر، لأعطيكم آخرة ورجاء.","إرميا ٢٩: ١١"],
+["أم لستم تعلمون أن جسدكم هو هيكل للروح القدس الذي فيكم؟ … فمجّدوا الله في أجسادكم وفي أرواحكم التي هي لله.","١ كورنثوس ٦: ١٩-٢٠"],
+["أما أمرتك؟ تشدّد وتشجّع. لا ترهب ولا ترتعب، لأن الرب إلهك معك حيثما تذهب.","يشوع ١: ٩"],
+["أيها الرجال، أحبّوا نساءكم كما أحبّ المسيح أيضًا الكنيسة وأسلم نفسه لأجلها.","أفسس ٥: ٢٥"],
+["فالذي جمعه الله لا يفرّقه إنسان.","مرقس ١٠: ٩"],
+["أفكار المجتهد إنما هي للخصب، وكل عجول إنما هو للعوز.","أمثال ٢١: ٥"],
+["فليضئ نوركم هكذا قدّام الناس، لكي يروا أعمالكم الحسنة ويمجّدوا أباكم الذي في السماوات.","متى ٥: ١٦"],
+["الأمين في القليل أمين أيضًا في الكثير، والظالم في القليل ظالم أيضًا في الكثير.","لوقا ١٦: ١٠"],
+["يا رب، بالغداة تسمع صوتي. بالغداة أوجّه صلاتي نحوك وأنتظر.","مزمور ٥: ٣"],
+["كُفّوا واعلموا أني أنا الله. أتعالى بين الأمم، أتعالى في الأرض.","مزمور ٤٦: ١٠"],
+["ولا تشاكلوا هذا الدهر، بل تغيّروا عن شكلكم بتجديد أذهانكم، لتختبروا ما هي إرادة الله الصالحة المرضية الكاملة.","رومية ١٢: ٢"],
+["الجواب الليّن يصرف الغضب، والكلام الموجع يهيّج السخط.","أمثال ١٥: ١"],
+["البطيء الغضب خير من الجبار، ومالك روحه خير ممن يأخذ مدينة.","أمثال ١٦: ٣٢"],
+["بدء الحكمة مخافة الرب، ومعرفة القدوس فهم.","أمثال ٩: ١٠"],
+["فلا نفشل في عمل الخير لأننا سنحصد في وقته إن كنا لا نكلّ.","غلاطية ٦: ٩"],
+["اقتربوا إلى الله فيقترب إليكم.","يعقوب ٤: ٨"],
+["بالمحبة اخدموا بعضكم بعضًا.","غلاطية ٥: ١٣"],
+["سراج لرجلي كلامك، ونور لسبيلي.","مزمور ١١٩: ١٠٥"],
+["اشكروا في كل شيء، لأن هذه هي مشيئة الله في المسيح يسوع من جهتكم.","١ تسالونيكي ٥: ١٨"],
+["إحصاء أيامنا هكذا علّمنا فنؤتى قلب حكمة.","مزمور ٩٠: ١٢"],
+["واثقًا بهذا عينه أن الذي ابتدأ فيكم عملًا صالحًا يكمّل إلى يوم يسوع المسيح.","فيلبي ١: ٦"],
+["ملقين كل همّكم عليه، لأنه هو يعتني بكم.","١ بطرس ٥: ٧"]
 ];
 function dayIndex(){
   const p=new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
@@ -85,10 +124,29 @@ function tick(){
   document.getElementById("date").textContent=new Intl.DateTimeFormat("en-GB",{timeZone:TZ,weekday:"long",day:"numeric",month:"long"}).format(now)+" · Cairo";
 }
 const v=verses[dayIndex()];
-document.getElementById("vtext").textContent="“"+v[0]+"”";
+document.getElementById("vtext").textContent="«"+v[0]+"»";
 document.getElementById("vref").textContent=v[1];
 tick(); setInterval(tick,1000);
-</script>
 
-</div>
+/* Manifesto rotator */
+const lines=window.MANIFESTO||[];
+const rail=document.getElementById("rail"), el=document.getElementById("line"), sub=document.getElementById("sub");
+let i=Math.floor(Math.random()*lines.length);
+lines.forEach(()=>rail.appendChild(document.createElement("i")));
+function show(){
+  el.textContent=lines[i][0]; sub.textContent=lines[i][1];
+  [...rail.children].forEach((d,k)=>d.classList.toggle("on",k===i));
+}
+function advance(){
+  el.classList.add("fade"); sub.classList.add("fade");
+  setTimeout(()=>{i=(i+1)%lines.length;show();el.classList.remove("fade");sub.classList.remove("fade");},350);
+}
+if(lines.length){
+  show();
+  let timer=setInterval(advance,20000);
+  document.getElementById("next").addEventListener("click",()=>{clearInterval(timer);advance();timer=setInterval(advance,20000);});
+}else{
+  document.querySelector(".manifesto").hidden=true;
+}
+</script>
 </body></html>
