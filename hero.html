@@ -132,6 +132,23 @@ svg.ic .dot{fill:currentColor;stroke:none}
 .go .goals li{animation:fadein .8s ease both;animation-delay:calc(1.05s + var(--k)*.16s)}
 .go .goals .spark{animation:light .95s var(--ease) both;animation-delay:calc(1.05s + var(--k)*.16s)}
 
+/* short embed (Notion's default embed is 320px tall): same layout, tighter spacing */
+@media (min-width:1000px) and (max-height:359px){
+  .card{padding-top:16px;padding-bottom:14px}
+  .now-a{gap:12px;padding-bottom:14px}
+  .time{font-size:48px}.date{margin-top:6px}
+  .temp{font-size:36px}.glyph{width:32px;height:32px}
+  .wx-more{gap:8px;padding-top:12px}
+  .star{gap:10px;padding-bottom:14px}
+  .goals{gap:8px}
+  .verse{gap:6px;padding-bottom:14px}
+  .vtext{font-size:24px;line-height:1.6}
+  .mani{gap:4px;padding-top:12px}
+  .line{font-size:23px}
+  .sub{margin-top:3px;font-size:16px}
+  .foot{margin-top:4px}
+}
+
 /* medium: Notion page at normal width, iPad */
 @media (max-width:999px){
   .card{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);grid-template-rows:auto 1fr auto;grid-template-areas:"now now" "star verse" "mani mani";
@@ -170,6 +187,14 @@ svg.ic .dot{fill:currentColor;stroke:none}
   .mani{flex:none;padding:14px 0 0}
   .line{font-size:20px}.sub{font-size:15px}
   .dots{display:flex}
+}
+@media (max-width:639px) and (max-height:359px){
+  .page{gap:10px;padding-top:10px;padding-bottom:22px}
+  .star{gap:10px}
+  .goals{gap:6px}
+  .mani{padding-top:10px}
+  .vtext{font-size:21px}
+  .dots{bottom:7px}
 }
 
 @media (prefers-reduced-motion:reduce){
