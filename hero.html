@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Life OS Today</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=Manrope:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri&family=Aref+Ruqaa&family=Caveat:wght@600&family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..500,100;1,9..144,400,100&family=Nunito:wght@400..700&display=swap">
 <script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("js")</script>
 <style>
 /* Life OS, top of the page: one card instead of three blocks.
@@ -9,17 +9,19 @@
    Medium: "now" becomes a strip across the top. Phone (<640px): two swipeable pages, each fits the embed.
    Motion is calm on purpose: one load sequence (the clock rolls in, the North Star lights up star by star),
    then only a breathing colon, a slow weather glyph, an occasional twinkle and the manifesto timer.
-   Content: north-star.js (North Star), manifesto-lines.js (My Manifesto), verses in the script below. */
+   Content: north-star.js (North Star), manifesto-lines.js (My Manifesto), verses in the script below.
+   Type is soft and warm on purpose: Fraunces with its SOFT axis at 100 (clock, temperature, manifesto),
+   rounded Nunito for everything else, handwritten labels (Caveat; Aref Ruqaa for آية اليوم), Amiri for the verse. */
 :root{
   --bg:#141020;--fg:#efeafb;--muted:#9b90bd;--accent:#b388ff;--line:#2b2347;
-  --display:"Fraunces",Georgia,serif;--body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --display:"Fraunces",Georgia,serif;--body:"Nunito",ui-rounded,system-ui,-apple-system,"Segoe UI",sans-serif;
   --arabic:"Amiri","Geeza Pro","Noto Naskh Arabic",serif;
   --ease:cubic-bezier(.2,.75,.2,1);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:transparent}
-body{color:var(--fg);font-family:var(--body);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{color:var(--fg);font-family:var(--body);font-variation-settings:"SOFT" 100;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 h2,p,ul{margin:0;padding:0;font:inherit}
 ul{list-style:none}
 [hidden]{display:none!important}
@@ -30,14 +32,14 @@ ul{list-style:none}
   padding:20px max(26px,env(safe-area-inset-right,0px)) 18px max(26px,env(safe-area-inset-left,0px))}
 .card::-webkit-scrollbar,.page::-webkit-scrollbar{display:none}
 .page{display:contents}
-.label{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:700;letter-spacing:.01em;color:var(--accent)}
+.label{display:flex;align-items:center;gap:9px;font-family:"Caveat",var(--body);font-size:20px;font-weight:600;line-height:18px;letter-spacing:0;color:var(--accent)}
 
 /* now: Cairo time, date, weather. On wide cards it shares the two rows of the grid (subgrid),
    so the weather details start on the same line as My Manifesto. */
 .now{grid-area:now;min-width:0;display:grid;grid-template-rows:subgrid;border-right:1px solid var(--line)}
 .now-a{display:flex;flex-direction:column;gap:20px;padding:0 24px 20px 0}
 .wx-more{display:flex;flex-direction:column;justify-content:space-between;gap:12px;padding:15px 24px 0 0;border-top:1px solid var(--line)}
-.time{display:flex;align-items:baseline;font-family:var(--display);font-weight:300;font-size:54px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.time{display:flex;align-items:baseline;font-family:var(--display);font-weight:400;font-size:54px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
 .time .d{display:inline-block}
 .time .colon{display:inline-block;padding:0 .02em;animation:breathe 2s ease-in-out infinite}
 .time .ap{margin-left:7px;font-family:var(--body);font-size:15px;font-weight:600;letter-spacing:.04em;color:var(--accent)}
@@ -45,7 +47,7 @@ ul{list-style:none}
 .wx-head{display:flex;flex-direction:column;gap:8px}
 .wx-now{display:flex;align-items:center;gap:10px}
 .glyph{width:36px;height:36px;flex:none;color:var(--accent)}
-.temp{font-family:var(--display);font-weight:300;font-size:40px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.temp{font-family:var(--display);font-weight:400;font-size:40px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .temp sup{position:relative;top:3px;margin-left:2px;font-family:var(--body);font-size:13px;font-weight:500;letter-spacing:0;color:var(--muted);vertical-align:top}
 .cond{font-size:13px;font-weight:600}
 .meta{display:grid;grid-template-columns:auto auto;justify-content:start;gap:3px 14px;font-size:12px;color:var(--muted)}
@@ -69,7 +71,7 @@ svg.ic .dot{fill:currentColor;stroke:none}
 
 /* verse of the day */
 .verse{grid-area:verse;min-width:0;display:flex;flex-direction:column;gap:8px;padding:2px 0 20px 6px;font-family:var(--arabic)}
-.verse .label{font-family:var(--arabic);font-size:16px;letter-spacing:0}
+.verse .label{font-family:"Aref Ruqaa",var(--arabic);font-size:19px;font-weight:400;line-height:28px;letter-spacing:0}
 .vtext{font-size:26px;line-height:1.65;text-wrap:balance}
 .vref{padding-inline-start:.35em;font-style:normal;font-size:15px;color:var(--muted);white-space:nowrap}
 
@@ -78,7 +80,7 @@ svg.ic .dot{fill:currentColor;stroke:none}
 .slide{transition:opacity .45s ease,transform .45s var(--ease)}
 .slide.out{opacity:0;transform:translateY(-5px)}
 .line{font-family:var(--display);font-weight:500;font-size:25px;line-height:1.2;letter-spacing:-.01em;text-wrap:balance}
-.sub{margin-top:5px;max-width:70ch;font-family:var(--display);font-style:italic;font-weight:300;font-size:17px;line-height:1.4;color:var(--muted)}
+.sub{margin-top:5px;max-width:70ch;font-family:var(--display);font-style:italic;font-weight:400;font-size:17px;line-height:1.4;color:var(--muted)}
 .foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:6px}
 .rail{display:flex;gap:6px}
 .rail i{position:relative;width:22px;height:3px;border-radius:2px;background:var(--line);overflow:hidden}
