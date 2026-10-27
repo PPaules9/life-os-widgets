@@ -1,7 +1,10 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Life OS Today</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri&family=Aref+Ruqaa&family=Caveat:wght@600&family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..500,100;1,9..144,400,100&family=Nunito:wght@400..700&display=swap">
-<script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("js")</script>
+<script>/* intro once a day: Notion reloads embeds whenever you come back to the page or scroll past them */
+(function(){var r=document.documentElement;if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;var seen=false;
+try{seen=localStorage.getItem("lifeos-hero-intro")===new Intl.DateTimeFormat("en-CA",{timeZone:"Africa/Cairo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date())}catch(e){}
+r.classList.add(seen?"seen":"js")})()</script>
 <style>
 /* Life OS, top of the page: one card instead of three blocks.
    Wide (1000px+):  [ now: Cairo time, date, weather ] [ North Star ] [ verse of the day, Arabic RTL ]
@@ -9,6 +12,8 @@
    Medium: "now" becomes a strip across the top. Phone (<640px): two swipeable pages, each fits the embed.
    Motion is calm on purpose: one load sequence (the clock rolls in, the North Star lights up star by star),
    then only a breathing colon, a slow weather glyph, an occasional twinkle and the manifesto timer.
+   The load sequence plays once a day (Cairo time). Notion reloads the embed every time you come back to the
+   page or scroll past it, so later loads that day skip it and show the card straight away.
    Content: north-star.js (North Star), manifesto-lines.js (My Manifesto), verses in the script below.
    Type is soft and warm on purpose: Fraunces with its SOFT axis at 100 (clock, temperature, manifesto),
    rounded Nunito for everything else, handwritten labels (Caveat; Aref Ruqaa for آية اليوم), Amiri for the verse. */
@@ -118,7 +123,7 @@ svg.ic .dot{fill:currentColor;stroke:none}
 .spark.tw{animation:twinkle 1.4s ease-in-out}
 .d.roll{animation:roll .55s var(--ease)}
 
-/* load sequence: runs once, only when motion is allowed */
+/* load sequence: once a day (the head script adds .js only on the day's first load), only when motion is allowed */
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 @keyframes rise{from{opacity:0;transform:translateY(.45em)}to{opacity:1;transform:none}}
 @keyframes ignite{from{opacity:0;transform:scale(.3) rotate(-135deg)}to{opacity:1;transform:none}}
@@ -402,11 +407,14 @@ function syncDots(){const n=Math.round(card.scrollLeft/Math.max(1,card.clientWid
 card.addEventListener("scroll",syncDots,{passive:true});
 dots.forEach((d,k)=>d.addEventListener("click",()=>card.scrollTo({left:k*card.clientWidth,behavior:reduce?"auto":"smooth"})));
 
-/* ---- Load sequence: clock rolls in, verse and weather fade up, the North Star lights star by star ---- */
+/* ---- Load sequence: clock rolls in, verse and weather fade up, the North Star lights star by star.
+   Once a day: after it plays, later loads that day skip it (no .js class from the head script) ---- */
+const INTRO="lifeos-hero-intro";
 let started=false;
 function start(){
   if(started)return;started=true;
-  if(reduce){settled=true;return;}
+  if(reduce||!root.classList.contains("js")){settled=true;return;}
+  try{localStorage.setItem(INTRO,pd.format(new Date()))}catch(e){}
   root.classList.add("go");
   setTimeout(()=>{root.classList.remove("js","go");settled=true;},2900);
 }
